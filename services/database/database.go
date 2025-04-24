@@ -37,7 +37,7 @@ func (db Database) Connect() {
 		log.Fatalf("[ERROR] getting the list of collections. Error: %v", err)
 	}
 
-	listOfNecessaryCollections := make(map[string]bool, 0)
+	listOfNecessaryCollections := make(map[string]bool)
 	listOfNecessaryCollections["groups"] = false
 
 	for _, collection := range collections {
@@ -52,4 +52,12 @@ func (db Database) Connect() {
 			log.Printf("[INFO] Collection %s has been created", collectionName)
 		}
 	}
+}
+
+func (db Database) SaveGeminiToken(chatID int64, token string) error {
+	_, err := db.DB.Collection("groups").UpdateOne(context.Background(), bson.D{{Key: "groupID", Value: chatID}}, bson.D{{Key: "$set", Value: bson.D{{Key: "geminiToken", Value: token}}}}, options.UpdateOne().SetUpsert(true))
+	if err != nil {
+		return err
+	}
+	return nil
 }
