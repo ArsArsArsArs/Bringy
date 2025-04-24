@@ -1,8 +1,11 @@
 package commands
 
 import (
+	"Bringy/services/database"
+	"Bringy/services/gemini"
 	"Bringy/services/helpful"
 	"context"
+	"log"
 	"strings"
 
 	"github.com/go-telegram/bot"
@@ -64,5 +67,48 @@ func SetGeminiToken(ctx context.Context, b *bot.Bot, upd *models.Update) {
 			return
 		}
 
+		token := splitMsg[1]
+
+		if ok := gemini.ClientManager.CheckAvailability(token); !ok {
+			b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: upd.Message.Chat.ID,
+				ReplyParameters: &models.ReplyParameters{
+					MessageID:                upd.Message.ID,
+					AllowSendingWithoutReply: true,
+				},
+				ParseMode: "HTML",
+				Text:      "Токен не прошёл проверку\n\nИнформация о токенах Gemini: https://ai.google.dev/gemini-api/docs/api-key",
+			})
+			return
+		}
+
+		err := database.DB.SaveGeminiToken(upd.Message.Chat.ID, token)
+		if err != nil {
+			log.Printf("[ERROR] saving a gemini token. Error: %v", err)
+			b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: upd.Message.Chat.ID,
+				ReplyParameters: &models.ReplyParameters{
+					MessageID:                upd.Message.ID,
+					AllowSendingWithoutReply: true,
+				},
+				ParseMode: "HTML",
+				Text:      "Не удалось сохранить токен. Попробуйте ещё раз, пожалуйста!",
+			})
+			return
+		}
+
+		b.SetMessageReaction(ctx, &bot.SetMessageReactionParams{
+			ChatID:    upd.Message.Chat.ID,
+			MessageID: upd.Message.ID,
+			Reaction: []models.ReactionType{
+				{
+					Type: models.ReactionTypeTypeEmoji,
+					ReactionTypeEmoji: &models.ReactionTypeEmoji{
+						Type:  "emoji",
+						Emoji: "👍",
+					},
+				},
+			},
+		})
 	}
 }

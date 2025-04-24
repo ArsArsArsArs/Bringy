@@ -2,7 +2,9 @@ package main
 
 import (
 	"Bringy/handlers"
+	"Bringy/handlers/commands"
 	"Bringy/services/database"
+	"Bringy/services/gemini"
 	"Bringy/services/helpful"
 	"context"
 	"log"
@@ -21,6 +23,7 @@ func init() {
 	}
 
 	database.DB.Connect()
+	gemini.NewClientManager()
 }
 
 func main() {
@@ -30,12 +33,15 @@ func main() {
 	opts := []bot.Option{
 		bot.WithErrorsHandler(handlers.ErrorHandler),
 		bot.WithDefaultHandler(handlers.DefaultHandler),
+		bot.WithAllowedUpdates(bot.AllowedUpdates{"message", "my_chat_member"}),
 	}
 
 	b, err := bot.New(helpful.GetEnvParam("BotToken", true), opts...)
 	if err != nil {
 		log.Fatalf("[ERROR] initiating a new bot. Error: %v", err)
 	}
+
+	registerHandlers(b)
 
 	log.Println("[INFO] Bringy should be started")
 	go registerCommands(ctx, b)
@@ -76,10 +82,14 @@ func registerCommands(ctx context.Context, b *bot.Bot) {
 				Description: "❗ Установить токен ИИ. Требуется для работы",
 			},
 		},
-		Scope: &models.BotCommandScopeChatAdministrators{},
+		Scope: &models.BotCommandScopeAllChatAdministrators{},
 	})
 	if err != nil {
 		log.Printf("[WARNING] Commands for chat administators haven't been added. Reason: %v", err)
 		err = nil
 	}
+}
+
+func registerHandlers(b *bot.Bot) {
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/set_gemini_token", bot.MatchTypePrefix, commands.SetGeminiToken)
 }
