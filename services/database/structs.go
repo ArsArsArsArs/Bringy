@@ -12,7 +12,7 @@ type Group struct {
 	GeminiToken string        `bson:"geminiToken"`
 }
 type GroupThread struct {
-	ThreadID        int64 `bson:"threadID"`
-	Active          bool  `bson:"active"`
-	PinnedMessageID int64 `bson:"pinnedMessageID"`
+	ThreadID        int  `bson:"threadID"`
+	Active          bool `bson:"active"`
+	PinnedMessageID int  `bson:"pinnedMessageID"`
 }

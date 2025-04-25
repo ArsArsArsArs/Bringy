@@ -92,4 +92,24 @@ func registerCommands(ctx context.Context, b *bot.Bot) {
 
 func registerHandlers(b *bot.Bot) {
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/set_gemini_token", bot.MatchTypePrefix, commands.SetGeminiToken)
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/launch", bot.MatchTypePrefix, commands.Launch, groupsOnly, adminsOnly)
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/stop", bot.MatchTypePrefix, commands.Stop, groupsOnly, adminsOnly)
+}
+
+func groupsOnly(next bot.HandlerFunc) bot.HandlerFunc {
+	return func(ctx context.Context, b *bot.Bot, upd *models.Update) {
+		if (upd.Message.Chat.Type != models.ChatTypeGroup) && (upd.Message.Chat.Type != models.ChatTypeSupergroup) {
+			return
+		}
+		next(ctx, b, upd)
+	}
+}
+
+func adminsOnly(next bot.HandlerFunc) bot.HandlerFunc {
+	return func(ctx context.Context, b *bot.Bot, upd *models.Update) {
+		if can := helpful.CanChangeInfo(upd.Message.Chat.ID, upd.Message.From.ID, b); !can {
+			return
+		}
+		next(ctx, b, upd)
+	}
 }

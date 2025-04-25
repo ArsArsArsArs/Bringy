@@ -3,6 +3,7 @@ package database
 import (
 	"Bringy/services/helpful"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -50,6 +51,65 @@ func (db *Database) Connect() {
 
 func (db *Database) SaveGeminiToken(chatID int64, token string) error {
 	_, err := db.DB.Collection("groups").UpdateOne(context.Background(), bson.D{{Key: "groupID", Value: chatID}}, bson.D{{Key: "$set", Value: bson.D{{Key: "geminiToken", Value: token}}}}, options.UpdateOne().SetUpsert(true))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *Database) GetGroupParams(chatID int64) (*Group, error) {
+	var group Group
+	err := db.DB.Collection("groups").FindOne(context.Background(), bson.D{{Key: "groupID", Value: chatID}}).Decode(&group)
+	if err != nil {
+		return nil, err
+	}
+	if group.ID == 0 {
+		return nil, errors.New("the group is not found")
+	}
+
+	return &group, nil
+}
+
+func (db *Database) PutActiveThreadIntoDB(chatID int64, msgID, threadID int, isAlreadyFound bool) error {
+	if isAlreadyFound {
+		_, err := db.DB.Collection("groups").UpdateOne(
+			context.Background(),
+			bson.D{{Key: "groupID", Value: chatID}},
+			bson.D{{Key: "$set", Value: bson.M{
+				"threads.$[thread].active":          true,
+				"threads.$[thread].pinnedMessageID": msgID,
+			}}},
+			options.UpdateOne().SetUpsert(true).SetArrayFilters([]interface{}{
+				bson.M{"thread.threadID": threadID},
+			}),
+		)
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err := db.DB.Collection("groups").UpdateOne(context.Background(), bson.D{{Key: "groupID", Value: chatID}}, bson.D{{Key: "$push", Value: bson.D{{Key: "threads", Value: GroupThread{
+			ThreadID:        threadID,
+			Active:          true,
+			PinnedMessageID: msgID,
+		}}}}}, options.UpdateOne().SetUpsert(true))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (db *Database) PullActiveThreadOutOfDB(chatID int64, threadID int) error {
+	_, err := db.DB.Collection("groups").UpdateOne(
+		context.Background(),
+		bson.D{{Key: "groupID", Value: chatID}},
+		bson.D{{Key: "$set", Value: bson.M{
+			"threads.$[thread].active": false,
+		}}},
+		options.UpdateOne().SetArrayFilters([]interface{}{
+			bson.M{"thread.threadID": threadID},
+		}),
+	)
 	if err != nil {
 		return err
 	}
