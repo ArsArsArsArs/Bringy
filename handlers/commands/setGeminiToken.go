@@ -82,7 +82,7 @@ func SetGeminiToken(ctx context.Context, b *bot.Bot, upd *models.Update) {
 			return
 		}
 
-		err := database.DB.SaveGeminiToken(upd.Message.Chat.ID, token)
+		err := database.DB.SaveGeminiToken(tokenSettersMap[upd.Message.From.ID], token)
 		if err != nil {
 			log.Printf("[ERROR] saving a gemini token. Error: %v", err)
 			b.SendMessage(ctx, &bot.SendMessageParams{
