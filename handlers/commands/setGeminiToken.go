@@ -19,7 +19,7 @@ func SetGeminiToken(ctx context.Context, b *bot.Bot, upd *models.Update) {
 		tokenSettersMap = make(map[int64]int64)
 	}
 
-	if upd.Message.Chat.Type == models.ChatTypeGroup {
+	if (upd.Message.Chat.Type == models.ChatTypeGroup) || (upd.Message.Chat.Type == models.ChatTypeSupergroup) {
 		if can := helpful.CanChangeInfo(upd.Message.Chat.ID, upd.Message.From.ID, b); !can {
 			return
 		}
@@ -110,5 +110,7 @@ func SetGeminiToken(ctx context.Context, b *bot.Bot, upd *models.Update) {
 				},
 			},
 		})
+
+		delete(tokenSettersMap, upd.Message.From.ID)
 	}
 }

@@ -14,7 +14,7 @@ import (
 
 var DB Database
 
-func (db Database) Connect() {
+func (db *Database) Connect() {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI(fmt.Sprintf("mongodb+srv://%s:%s@cluster0.zdlrkh7.mongodb.net/?retryWrites=true&w=majority&appName=%s", helpful.GetEnvParam("MongoDBUsername", true), helpful.GetEnvParam("MongoDBPassword", true), helpful.GetEnvParam("MongoDBAppName", true))).SetServerAPIOptions(serverAPI).SetTimeout(time.Second * 15)
 
@@ -22,12 +22,6 @@ func (db Database) Connect() {
 	if err != nil {
 		log.Fatalf("[ERROR] connecting to the database. Error: %v", err)
 	}
-
-	defer func() {
-		if err := client.Disconnect(context.Background()); err != nil {
-			log.Fatalf("[ERROR] disconnecting from the database. Error: %v", err)
-		}
-	}()
 
 	db.DB = client.Database(helpful.GetEnvParam("MongoDBDatabaseName", true))
 	log.Println("[INFO] Connection to the database is established")
@@ -54,7 +48,7 @@ func (db Database) Connect() {
 	}
 }
 
-func (db Database) SaveGeminiToken(chatID int64, token string) error {
+func (db *Database) SaveGeminiToken(chatID int64, token string) error {
 	_, err := db.DB.Collection("groups").UpdateOne(context.Background(), bson.D{{Key: "groupID", Value: chatID}}, bson.D{{Key: "$set", Value: bson.D{{Key: "geminiToken", Value: token}}}}, options.UpdateOne().SetUpsert(true))
 	if err != nil {
 		return err
