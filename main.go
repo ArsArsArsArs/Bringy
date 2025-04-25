@@ -91,9 +91,19 @@ func registerCommands(ctx context.Context, b *bot.Bot) {
 }
 
 func registerHandlers(b *bot.Bot) {
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypePrefix, commands.Start, privateOnly)
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/set_gemini_token", bot.MatchTypePrefix, commands.SetGeminiToken)
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/launch", bot.MatchTypePrefix, commands.Launch, groupsOnly, adminsOnly)
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/stop", bot.MatchTypePrefix, commands.Stop, groupsOnly, adminsOnly)
+}
+
+func privateOnly(next bot.HandlerFunc) bot.HandlerFunc {
+	return func(ctx context.Context, b *bot.Bot, upd *models.Update) {
+		if upd.Message.Chat.Type != models.ChatTypePrivate {
+			return
+		}
+		next(ctx, b, upd)
+	}
 }
 
 func groupsOnly(next bot.HandlerFunc) bot.HandlerFunc {

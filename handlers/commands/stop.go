@@ -61,6 +61,11 @@ func Stop(ctx context.Context, b *bot.Bot, upd *models.Update) {
 		return
 	}
 
+	b.UnpinChatMessage(ctx, &bot.UnpinChatMessageParams{
+		ChatID:    upd.Message.Chat.ID,
+		MessageID: foundThread.PinnedMessageID,
+	})
+
 	b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: upd.Message.Chat.ID,
 		ReplyParameters: &models.ReplyParameters{

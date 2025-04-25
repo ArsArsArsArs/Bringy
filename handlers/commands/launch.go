@@ -86,6 +86,11 @@ func Launch(ctx context.Context, b *bot.Bot, upd *models.Update) {
 		})
 	}
 
+	b.UnpinChatMessage(ctx, &bot.UnpinChatMessageParams{
+		ChatID:    upd.Message.Chat.ID,
+		MessageID: foundThread.PinnedMessageID,
+	})
+
 	err = database.DB.PutActiveThreadIntoDB(upd.Message.Chat.ID, msg.ID, upd.Message.MessageThreadID, found)
 	if err != nil {
 		log.Printf("[ERROR] putting an active thread into DB. Error: %v", err)
