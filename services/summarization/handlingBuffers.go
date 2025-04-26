@@ -1,6 +1,7 @@
 package summarization
 
 import (
+	"Bringy/services/config"
 	"Bringy/services/database"
 	"log"
 	"strconv"
@@ -27,7 +28,7 @@ func AddBuffer(chatID int64, threadID int, pinnedMessageID int) *CircularBuffer 
 }
 
 func ProcessBuffer(cb *CircularBuffer) {
-	ticker := time.NewTicker(time.Minute * 5)
+	ticker := time.NewTicker(time.Minute * time.Duration(config.MinuteIntervalSummarization))
 	defer ticker.Stop()
 
 	for range ticker.C {

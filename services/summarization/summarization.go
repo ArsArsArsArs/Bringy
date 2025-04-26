@@ -1,6 +1,7 @@
 package summarization
 
 import (
+	"Bringy/services/config"
 	"Bringy/services/database"
 	"Bringy/services/gemini"
 	"context"
@@ -35,13 +36,13 @@ func summarize(cb *CircularBuffer) {
 		return
 	}
 
-	timeNow := time.Now().UTC().Add(time.Hour * 3)
+	timeNow := time.Now().UTC().Add(time.Hour * time.Duration(config.UTCPlusHours))
 
 	b.EditMessageText(context.Background(), &bot.EditMessageTextParams{
 		ChatID:    group.ID,
 		MessageID: cb.pinnedMessageID,
 		ParseMode: "HTML",
-		Text:      fmt.Sprintf("👀 <b>О чём идёт речь сейчас?</b>\n\n<blockquote>%s</blockquote>\n<i>Последнее обновление: %s</i>", summarization, timeNow.Format(time.TimeOnly)),
+		Text:      fmt.Sprintf("👀 <b>О чём идёт речь сейчас?</b>\n\n<blockquote>%s</blockquote>\n<i>Последнее обновление: %s (UTC+%d)</i>", summarization, timeNow.Format(time.TimeOnly), config.UTCPlusHours),
 	})
 
 	cb.Clear()
