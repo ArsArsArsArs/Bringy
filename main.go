@@ -6,6 +6,7 @@ import (
 	"Bringy/services/database"
 	"Bringy/services/gemini"
 	"Bringy/services/helpful"
+	"Bringy/services/summarization"
 	"context"
 	"log"
 	"os"
@@ -45,6 +46,7 @@ func main() {
 
 	log.Println("[INFO] Bringy should be started")
 	go registerCommands(ctx, b)
+	go summarization.StartingInit(b)
 	b.Start(ctx)
 }
 

@@ -3,6 +3,7 @@ package commands
 import (
 	"Bringy/services/database"
 	"Bringy/services/helpful"
+	"Bringy/services/summarization"
 	"context"
 	"fmt"
 	"log"
@@ -105,6 +106,9 @@ func Launch(ctx context.Context, b *bot.Bot, upd *models.Update) {
 		})
 		return
 	}
+
+	cb := summarization.AddBuffer(upd.Message.Chat.ID, upd.Message.MessageThreadID, msg.ID)
+	go summarization.ProcessBuffer(cb)
 
 	b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: upd.Message.Chat.ID,

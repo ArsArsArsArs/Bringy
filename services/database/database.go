@@ -115,3 +115,17 @@ func (db *Database) PullActiveThreadOutOfDB(chatID int64, threadID int) error {
 	}
 	return nil
 }
+
+func (db *Database) GetActiveGroups() (*[]Group, error) {
+	var groups []Group
+	cur, err := db.DB.Collection("groups").Find(context.Background(), bson.M{"threads.active": true})
+	if err != nil {
+		return nil, err
+	}
+	err = cur.All(context.Background(), &groups)
+	if err != nil {
+		return nil, err
+	}
+
+	return &groups, nil
+}
