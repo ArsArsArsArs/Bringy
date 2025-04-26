@@ -43,4 +43,6 @@ func summarize(cb *CircularBuffer) {
 		ParseMode: "HTML",
 		Text:      fmt.Sprintf("👀 <b>О чём идёт речь сейчас?</b>\n\n<blockquote>%s</blockquote>\n\n<i>Последнее обновление: %s</i>", summarization, timeNow.Format(time.TimeOnly)),
 	})
+
+	cb.Clear()
 }
