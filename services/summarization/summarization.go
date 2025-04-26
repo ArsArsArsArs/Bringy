@@ -41,7 +41,7 @@ func summarize(cb *CircularBuffer) {
 		ChatID:    group.ID,
 		MessageID: cb.pinnedMessageID,
 		ParseMode: "HTML",
-		Text:      fmt.Sprintf("👀 <b>О чём идёт речь сейчас?</b>\n\n<blockquote>%s</blockquote>\n\n<i>Последнее обновление: %s</i>", summarization, timeNow.Format(time.TimeOnly)),
+		Text:      fmt.Sprintf("👀 <b>О чём идёт речь сейчас?</b>\n\n<blockquote>%s</blockquote>\n<i>Последнее обновление: %s</i>", summarization, timeNow.Format(time.TimeOnly)),
 	})
 
 	cb.Clear()

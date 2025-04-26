@@ -27,7 +27,7 @@ func AddBuffer(chatID int64, threadID int, pinnedMessageID int) *CircularBuffer 
 }
 
 func ProcessBuffer(cb *CircularBuffer) {
-	ticker := time.NewTicker(time.Second * 30)
+	ticker := time.NewTicker(time.Minute * 5)
 	defer ticker.Stop()
 
 	for range ticker.C {
