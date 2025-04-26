@@ -20,7 +20,7 @@ import (
 func init() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("[ERROR] loading godotenv. Error: %v", err)
+		log.Println("[WARNING] loading godotenv. Reason: %v", err)
 	}
 
 	database.DB.Connect()
